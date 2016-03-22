@@ -57,7 +57,8 @@ L = lcm(p-1, q-1)  注：lcm 是求最小公倍数
 2. Rabin, 利用模N世界下求平方根的困难度, 以经证明其与质因数分解困难度是相当的.  
 3. 椭圆曲线密码, ECC, 通过将对椭圆曲线上的特定点进行特殊乘法运算来实现, 它利用了这种乘法运算的逆运算非常困难的特性  
 
-**参考**
+**参考**  
+
 1. [<<图解密码学>>](https://book.douban.com/subject/26265544/)  
-2. [RSA算法原理（一）](http://www.ruanyifeng.com/blog/2013/06/rsa_algorithm_part_one.html)
-3. [RSA算法原理（二）](http://www.ruanyifeng.com/blog/2013/07/rsa_algorithm_part_two.html)
+2. [RSA算法原理（一）](http://www.ruanyifeng.com/blog/2013/06/rsa_algorithm_part_one.html)  
+3. [RSA算法原理（二）](http://www.ruanyifeng.com/blog/2013/07/rsa_algorithm_part_two.html)  

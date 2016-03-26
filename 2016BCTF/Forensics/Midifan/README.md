@@ -89,8 +89,3 @@ MIDI消息的种类很丰富，而且没有统一的格式，这意味着只能�
 
 + [http://www.codeproject.com/Articles/5390/Steganography-V-Hiding-Messages-in-MIDI-Songs](http://www.codeproject.com/Articles/5390/Steganography-V-Hiding-Messages-in-MIDI-Songs)
 
-
-
-
-
-ideo

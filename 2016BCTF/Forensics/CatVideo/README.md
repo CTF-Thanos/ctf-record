@@ -20,14 +20,15 @@ for f in glob.glob("out*.bmp"):
 ```
 
 结果函数不可以用在RGB模式上，网上对于`logical_xor`的文档也少的可怜.遍历了我知道的各种格式，发现只支持灰度图，但是XOR出来虽然知道有东西，也看不清楚。
-后来在网上找到了这么一个地址:[https://www.cs.hmc.edu/~jlevin/ImageCompare.py](https://www.cs.hmc.edu/~jlevin/ImageCompare.py)用了其中的XOR搞定。
+后来在网上找到了这么一个地址:[https://www.cs.hmc.edu/~jlevin/ImageCompare.py](https://www.cs.hmc.edu/~jlevin/ImageCompare.py)
+
+用了其中的XOR搞定。
 
 最后得到的图片大概这样子：
+
 ![flag.bmp](flag.bmp)
 
-###其他WP
-外国队伍wp
-两种方法可以看看
+###扩展阅读
 
 + [http://err0r-451.ru/2016-bctf-forensic-catvideo-150-pts/](http://err0r-451.ru/2016-bctf-forensic-catvideo-150-pts/)
 + [https://github.com/DMArens/CTF-Writeups/tree/master/2016/BCTF/Forensics150](https://github.com/DMArens/CTF-Writeups/tree/master/2016/BCTF/Forensics150)

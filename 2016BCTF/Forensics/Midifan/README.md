@@ -3,12 +3,12 @@
 
 此题由S.K同学做出。我负责整理为文档继续团队学习。
 
-最开始，使用Python的[midi](https://github.com/vishnubob/python-midi)库跑了一遍。
+最开始，使用Python的[python-midi](https://github.com/vishnubob/python-midi)库跑了一遍。
 按照好心人提示,可以转化为csv文件以看见channel/延时 等数据。网上下载了midicsv文件,编译之后使用
 
 `midicsv midifan.mid out.csv`
 
-得到CSV文件，和网上找到的原始文件作对比，发现第一列时间里出现轻微的波动，如图:
+得到CSV文件，和网上找到的原始文件作对比，发现第一列时间里出现轻微的波动，如图(左边题目，右边网上找到的原版文件):
 
 ![diff.png](diff.png)
 

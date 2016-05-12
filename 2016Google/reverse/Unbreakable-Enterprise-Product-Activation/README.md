@@ -91,4 +91,71 @@
 	print ''.join(res)
 
 ### 0x03 深入
-在学习 Z3 的过程中, 发现其有更深层的用法, 即用于 [符号执行](https://zh.wikipedia.org/wiki/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C), 配合污点分析等等技术, 最终实现一定程度上的自动化漏洞挖掘. 接下来我们分析下符号执行的相关原理, 并给出本题利用符号执行的解法.  
+在学习 Z3 的过程中, 发现其有更深层的用法, 即用于 [符号执行](https://zh.wikipedia.org/wiki/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C), 配合污点分析等等技术, 最终实现一定程度上的自动化漏洞挖掘. 先不扯那么远, 我们先来聊聊符号执行, 符号执行目前就我个人粗浅的理解是这样的:  
+
+想象一下在你解决和本题类似的逆向题时, 在静态分析中我们完全根据指令来分析程序, 我们无法确定程序在某一个状态下的某个寄存器某个内存地址的具体的值, 这种情况如果想分析程序如何走到某个分支就需要对整个程序有一个比较完整的理解, 为了加快速度, 我们往往可以利用调试的手段来辅助, 因为调试可以让可执行程序真实的运行起来, 我们可以观察在不同的初始输入下在某一个分支路径上会有怎样具体的值, 以此来猜测可能的输入是什么, 但有时候这并不会带来什么实质帮助. 类比一下我们刚刚提到的约束满足问题, 一个是求可以让程序走进验证成功分支的输入, 一个是求可以满足约束关系的变量, 如此的相似不是么? 所以把程序的各种赋值指令都看成对变量范围的指定, 各种跳转指令的条件都看做约束关系, 我们就可以把一个可执行程序的代码转成约束关系从而利用SMT求解器来得到我们想要的输入, 这个过程如同把汇编指令转成另一种语言去执行, 而且所有的输入都被符号化, 仿佛把程序的执行从符号的意义上虚拟化, 数学成为了这个程序赖以执行的虚拟机. 从z3的角度来看, 我们可以把程序的汇编指令转成 z3 的约束语句, 把输入当成z3中类似 BitVec 声明的变量, 最后求解输入的具体. 所谓的符号执行大概如是.(我可能理解有误, 还望各位及时指出)  
+那么把程序指令转成约束关系, 整个这个过程感觉可以抽取成一个框架用来分析各种二进制文件, 是否有现成好用的框架呢? 这里要推荐的是名气很大的 [angr](https://github.com/angr/angr).  
+
+下面给出使用 angr 来解决本题的方案(由于本题太过典型, angr官网将其收录到官方example中, 以下便是angr官方的解决脚本):  
+
+	"""
+	In this challenge we are given a binary that checks an input given as a
+	command line argument. If it is correct, 'Thank you - product activated!' is
+	printed. If it is incorrect, 'Product activation failure %d' is printed with a
+	specific error code.
+	Reversing shows that the program verifies that various operations on specific 
+	characters of input are equal to zero. Because of the program's linear nature
+	and reliance on verbose constraints, angr is perfect for solving this challenge
+	quickly. On a virtual machine, it took ~7 seconds to solve.
+	Author: scienceman (@docileninja)
+	Team: bitsforeveryone (USMA)
+	"""
+	import angr
+	
+	START_ADDR = 0x4005bd # first part of program that does computation
+	AVOID_ADDR = 0x400850 # address of function that prints wrong
+	FIND_ADDR = 0x400830 # address of function that prints correct
+	INPUT_ADDR = 0x6042c0 # location in memory of user input
+	INPUT_LENGTH = 0xf2 - 0xc0 + 1 # derived from the first and last character
+	                               # reference in data
+	
+	def extract_memory(state):
+	    """Convience method that returns the flag input memory."""
+	    return state.se.any_str(state.memory.load(INPUT_ADDR, INPUT_LENGTH))
+	
+	def char(state, n):
+	    """Returns a symbolic BitVector and contrains it to printable chars for a given state."""
+	    vec = state.se.BVS('c{}'.format(n), 8, explicit_name=True)
+	    return vec, state.se.And(vec >= ord(' '), vec <= ord('~'))
+	
+	def main():
+	    p = angr.Project('unbreakable')
+	
+	    print('adding BitVectors and constraints')
+	    state = p.factory.blank_state(addr=START_ADDR)
+	    for i in range(INPUT_LENGTH):
+	        c, cond = char(state, i)
+	        # the first command line argument is copied to INPUT_ADDR in memory
+	        # so we store the BitVectors for angr to manipulate
+	        state.memory.store(INPUT_ADDR + i, c)
+	        state.add_constraints(cond)
+	
+	    print('creating path and explorer')
+	    path = p.factory.path(state)
+	    ex = p.surveyors.Explorer(start=path, find=(FIND_ADDR,), avoid=(AVOID_ADDR,))
+	
+	    print('running explorer')
+	    ex.run()
+	
+	    flag = extract_memory(ex._f.state) # ex._f is equiv. to ex.found[0]
+	    print('found flag: {}'.format(flag))
+	
+	    return flag
+	
+	def test():
+	    assert main() == 'CTF{0The1Quick2Brown3Fox4Jumped5Over6The7Lazy8Fox9}'
+	
+	if __name__ == '__main__':
+	    main() 
+
+下面我简单说讲解下次脚本:  
